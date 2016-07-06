@@ -311,6 +311,15 @@ class AuditlogRule(models.Model):
         log_model = self.env['auditlog.log']
         http_request_model = self.env['auditlog.http.request']
         http_session_model = self.env['auditlog.http.session']
+
+        user_id = False
+        session_id = http_session_model.current_http_session()
+
+        if session_id:
+            user_id = http_session_model.browse(session_id).user_id.id
+
+        user_id = user_id or uid
+
         for res_id in res_ids:
             model_model = self.env[res_model]
             name = model_model.browse(res_id).name_get()
@@ -320,7 +329,7 @@ class AuditlogRule(models.Model):
                 'model_id': self.pool._auditlog_model_cache[res_model],
                 'res_id': res_id,
                 'method': method,
-                'user_id': uid,
+                'user_id': user_id,
                 'http_request_id': http_request_model.current_http_request(),
                 'http_session_id': http_session_model.current_http_session(),
             }
